@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>EatFresh Veg Restaurant</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Inline styles for menu/filter UI (keeps it self-contained and safe to paste) -->
+  <style>
+    /* --- Menu & Category Nav specific styles --- */
+    .menu-layout { display: flex; gap: 1.25rem; align-items: flex-start; }
+    .menu-block { flex: 1 1 680px; min-width: 320px; }
+
+    /* category nav inside menu */
+    .menu-categories {
+      display:flex;
+      gap:0.5rem;
+      flex-wrap:wrap;
+      margin: 0.5rem 0 1rem 0;
+      align-items:center;
+    }
+    .menu-categories button {
+      border: 0;
+      background: transparent;
+      padding: 0.45rem 0.75rem;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 600;
+      color: #475569;
+      transition: transform .15s ease, background .18s ease, color .18s ease;
+    }
+    .menu-categories button:hover { transform: translateY(-2px); color: #0f172a; }
+    .menu-categories button.active {
+      background: #10b981;
+      color: #fff;
+      box-shadow: 0 8px 22px rgba(16,185,129,0.14);
+    }
+
+    /* compact scrollable menu grid */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 0.9rem;
+      max-height: 62vh; /* prevents page getting too long */
+      overflow-y: auto;
+      padding: 0.6rem;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(250,250,250,0.8));
+      border: 1px solid #eef2f7;
+    }
+
+    .menu-item {
+      background: #fff;
+      padding: 0.9rem;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(15,23,42,0.04);
+      display:flex;
+      flex-direction:column;
+      gap:0.5rem;
+      min-height: 110px;
+    }
+    .menu-item h4 { margin: 0; font-size: 1rem; }
+    .menu-item p { margin: 0; color: #6b7280; font-size: 0.88rem; line-height: 1.2; }
+
+    .menu-meta {
+      display:flex;
+      gap:0.5rem;
+      align-items:center;
+      margin-top:auto;
+    }
+    .price { font-weight:700; color:#0f172a; }
+
+    /* Add button UI + light green transition */
+    .btn.small.add-to-cart {
+      background: linear-gradient(180deg,#f3faf6,#ffffff);
+      border: 1px solid rgba(16,185,129,0.06);
+      padding: 0.35rem 0.6rem;
+      border-radius: 8px;
+      font-weight:700;
+      cursor:pointer;
+      transition: transform 140ms ease, box-shadow 180ms ease, background-color 180ms ease, color 180ms ease;
+      color: #065f46;
+    }
+    .btn.small.add-to-cart:focus {
+      outline: 3px solid rgba(16,185,129,0.14);
+      outline-offset: 2px;
+    }
+
+    /* pressed/added state */
+    .btn.small.add-to-cart.added {
+      background-color: #10b981;
+      color: white;
+      box-shadow: 0 10px 30px rgba(16,185,129,0.18);
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    /* hide category when filtered out */
+    .menu-item.hidden { display: none !important; }
+
+    /* no-results message */
+    .menu-noresults {
+      padding: 1rem;
+      text-align:center;
+      color:#64748b;
+    }
+
+    /* Make cart aside remain as-is, but ensure responsiveness */
+    @media (max-width: 980px) {
+      .menu-layout { flex-direction: column; }
+      .cart-block { width: 100%; margin-top: 1rem; }
+      .menu-grid { max-height: 50vh; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container nav-content">
+      <div class="logo" href="#home">EatFresh Veg</div>
+      <nav>
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#menu">Menu</a>
+        <a href="#cart">Cart</a>
+        <a href="#reservation">Reservations</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero / Home -->
+  <section id="home" class="hero">
+    <div class="container hero-content">
+      <div>
+        <h1>Welcome to <span>EatFresh Veg Restaurant</span></h1>
+        <p>Fresh, delicious and 100% vegetarian dishes crafted with love.
+          Dine-in, reserve a cozy table or order online in just a few clicks.</p>
+        <div class="hero-buttons">
+          <a href="#menu" class="btn primary">Order Online</a>
+          <a href="#reservation" class="btn secondary">Reserve a Table</a>
+        </div>
+      </div>
+      <div class="hero-card">
+        <p class="tagline">Pure Veg · Homely Taste · Fast Service</p>
+        <p>Open Today: <strong>11:00 AM – 11:00 PM</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- About / Features -->
+  <section id="about" class="section">
+    <div class="container">
+      <h2 class="section-title">About Our Restaurant</h2>
+      <p class="section-subtitle">
+        EatFresh Veg Restaurant brings you a modern vegetarian dining experience with classic flavours,
+        hygienic kitchen and friendly service.
+      </p>
+
+      <div class="features">
+        <div class="feature-card">
+          <i class="fa-solid fa-carrot feature-icon"></i>
+          <h3>100% Vegetarian</h3>
+          <p>No egg, no meat – only fresh and flavourful vegetarian dishes.</p>
+        </div>
+        <div class="feature-card">
+          <i class="fa-solid fa-leaf feature-icon"></i>
+          <h3>Fresh Ingredients</h3>
+          <p>Locally sourced vegetables and handpicked spices prepared daily.</p>
+        </div>
+        <div class="feature-card">
+          <i class="fa-solid fa-bowl-food feature-icon"></i>
+          <h3>Online Ordering</h3>
+          <p>Order your favourites, add to cart and get an instant total in ₹.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Menu + Cart -->
+  <section id="menu" class="section menu-section">
+    <div class="container menu-layout">
+      <div class="menu-block">
+        <h2 class="section-title">Online Menu</h2>
+        <p class="section-subtitle">Tap “Add to Cart” to start your order. Use the categories to filter.</p>
+
+        <!-- Category nav for filtering -->
+        <div class="menu-categories" role="tablist" aria-label="Menu categories" id="menuCategories">
+          <button data-cat="all" class="active" aria-pressed="true">All</button>
+          <button data-cat="starters" aria-pressed="false">Starters</button>
+          <button data-cat="north" aria-pressed="false">North Indian</button>
+          <button data-cat="south" aria-pressed="false">South Indian</button>
+          <button data-cat="main" aria-pressed="false">Main Course</button>
+          <button data-cat="beverages" aria-pressed="false">Beverages</button>
+          <button data-cat="desserts" aria-pressed="false">Desserts</button>
+          <button data-cat="bestsellers" aria-pressed="false">Bestsellers</button>
+        </div>
+
+        <!-- compact grid of items (each item has a data-category attribute) -->
+        <div class="menu-grid" id="menuGrid">
+          <!-- STARTERS (data-category="starters") -->
+          <div class="menu-item" data-category="starters">
+            <h4>Veg Spring Rolls</h4>
+            <p>Golden-fried rolls stuffed with sautéed veggies and light spices.</p>
+            <div class="menu-meta">
+              <span class="price">₹150</span>
+              <button class="btn small add-to-cart" data-name="Veg Spring Rolls" data-price="150" aria-label="Add Veg Spring Rolls">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="starters,bestsellers">
+            <h4>Paneer Tikka</h4>
+            <p>Marinated cottage cheese grilled in the tandoor with capsicum & onions.</p>
+            <div class="menu-meta">
+              <span class="price">₹220</span>
+              <button class="btn small add-to-cart" data-name="Paneer Tikka" data-price="220" aria-label="Add Paneer Tikka">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="starters">
+            <h4>Crispy Corn</h4>
+            <p>Crunchy fried corn kernels tossed with herbs, chilli and lemon.</p>
+            <div class="menu-meta">
+              <span class="price">₹170</span>
+              <button class="btn small add-to-cart" data-name="Crispy Corn" data-price="170" aria-label="Add Crispy Corn">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="starters">
+            <h4>Chilli Paneer (Dry)</h4>
+            <p>Indo-Chinese style paneer tossed in spicy chilli–garlic sauce.</p>
+            <div class="menu-meta">
+              <span class="price">₹210</span>
+              <button class="btn small add-to-cart" data-name="Chilli Paneer (Dry)" data-price="210" aria-label="Add Chilli Paneer">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="starters">
+            <h4>Sweet Corn Soup</h4>
+            <p>Comforting sweet corn soup with vegetables and pepper.</p>
+            <div class="menu-meta">
+              <span class="price">₹140</span>
+              <button class="btn small add-to-cart" data-name="Sweet Corn Soup" data-price="140" aria-label="Add Sweet Corn Soup">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="starters">
+            <h4>Veg Manchurian (Dry)</h4>
+            <p>Crispy veg balls tossed in savoury Manchurian sauce.</p>
+            <div class="menu-meta">
+              <span class="price">₹200</span>
+              <button class="btn small add-to-cart" data-name="Veg Manchurian (Dry)" data-price="200" aria-label="Add Veg Manchurian">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="starters">
+            <h4>Cheese Garlic Bread</h4>
+            <p>Toasted bread topped with garlic butter and melted cheese.</p>
+            <div class="menu-meta">
+              <span class="price">₹160</span>
+              <button class="btn small add-to-cart" data-name="Cheese Garlic Bread" data-price="160" aria-label="Add Cheese Garlic Bread">Add</button>
+            </div>
+          </div>
+
+          <!-- NORTH INDIAN -->
+          <div class="menu-item" data-category="north">
+            <h4>Paneer Butter Masala</h4>
+            <p>Paneer cubes cooked in rich tomato–butter–cashew gravy.</p>
+            <div class="menu-meta">
+              <span class="price">₹260</span>
+              <button class="btn small add-to-cart" data-name="Paneer Butter Masala" data-price="260" aria-label="Add Paneer Butter Masala">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="north">
+            <h4>Dal Makhani</h4>
+            <p>Slow-cooked black lentils finished with cream and butter.</p>
+            <div class="menu-meta">
+              <span class="price">₹220</span>
+              <button class="btn small add-to-cart" data-name="Dal Makhani" data-price="220" aria-label="Add Dal Makhani">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="north">
+            <h4>Chole Masala</h4>
+            <p>Spiced chickpea curry cooked in Punjabi style.</p>
+            <div class="menu-meta">
+              <span class="price">₹190</span>
+              <button class="btn small add-to-cart" data-name="Chole Masala" data-price="190" aria-label="Add Chole Masala">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="north">
+            <h4>Kadai Paneer</h4>
+            <p>Paneer, capsicum and onions tossed in kadai masala.</p>
+            <div class="menu-meta">
+              <span class="price">₹250</span>
+              <button class="btn small add-to-cart" data-name="Kadai Paneer" data-price="250" aria-label="Add Kadai Paneer">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="north">
+            <h4>Aloo Gobi</h4>
+            <p>Dry curry of potato and cauliflower with home-style spices.</p>
+            <div class="menu-meta">
+              <span class="price">₹190</span>
+              <button class="btn small add-to-cart" data-name="Aloo Gobi" data-price="190" aria-label="Add Aloo Gobi">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="north,bestsellers">
+            <h4>Malai Kofta</h4>
+            <p>Soft paneer dumplings in a creamy, mildly sweet gravy.</p>
+            <div class="menu-meta">
+              <span class="price">₹270</span>
+              <button class="btn small add-to-cart" data-name="Malai Kofta" data-price="270" aria-label="Add Malai Kofta">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="north">
+            <h4>Garlic Naan</h4>
+            <p>Soft tandoor-baked naan topped with garlic and coriander.</p>
+            <div class="menu-meta">
+              <span class="price">₹70</span>
+              <button class="btn small add-to-cart" data-name="Garlic Naan" data-price="70" aria-label="Add Garlic Naan">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="north">
+            <h4>Tandoori Roti</h4>
+            <p>Whole wheat roti cooked in tandoor, brushed with ghee.</p>
+            <div class="menu-meta">
+              <span class="price">₹40</span>
+              <button class="btn small add-to-cart" data-name="Tandoori Roti" data-price="40" aria-label="Add Tandoori Roti">Add</button>
+            </div>
+          </div>
+
+          <!-- SOUTH INDIAN -->
+          <div class="menu-item" data-category="south">
+            <h4>Idli Sambar</h4>
+            <p>Soft steamed idlis served with hot sambar and chutneys.</p>
+            <div class="menu-meta">
+              <span class="price">₹120</span>
+              <button class="btn small add-to-cart" data-name="Idli Sambar" data-price="120" aria-label="Add Idli Sambar">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="south">
+            <h4>Medu Vada</h4>
+            <p>Crispy lentil doughnuts served with sambar and coconut chutney.</p>
+            <div class="menu-meta">
+              <span class="price">₹130</span>
+              <button class="btn small add-to-cart" data-name="Medu Vada" data-price="130" aria-label="Add Medu Vada">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="south,bestsellers">
+            <h4>Masala Dosa</h4>
+            <p>Thin crispy dosa stuffed with spiced potato masala.</p>
+            <div class="menu-meta">
+              <span class="price">₹150</span>
+              <button class="btn small add-to-cart" data-name="Masala Dosa" data-price="150" aria-label="Add Masala Dosa">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="south">
+            <h4>Ghee Roast Dosa</h4>
+            <p>Golden, paper-thin dosa roasted in ghee, served with sambar.</p>
+            <div class="menu-meta">
+              <span class="price">₹170</span>
+              <button class="btn small add-to-cart" data-name="Ghee Roast Dosa" data-price="170" aria-label="Add Ghee Roast Dosa">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="south">
+            <h4>Mysore Masala Dosa</h4>
+            <p>Dosa coated with spicy chutney and filled with potato masala.</p>
+            <div class="menu-meta">
+              <span class="price">₹180</span>
+              <button class="btn small add-to-cart" data-name="Mysore Masala Dosa" data-price="180" aria-label="Add Mysore Masala Dosa">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="south">
+            <h4>Onion Uttapam</h4>
+            <p>Thick uttapam topped with onions, chillies and coriander.</p>
+            <div class="menu-meta">
+              <span class="price">₹160</span>
+              <button class="btn small add-to-cart" data-name="Onion Uttapam" data-price="160" aria-label="Add Onion Uttapam">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="south">
+            <h4>Ven Pongal</h4>
+            <p>Comforting rice–dal pongal tempered with ghee, pepper and cashews.</p>
+            <div class="menu-meta">
+              <span class="price">₹150</span>
+              <button class="btn small add-to-cart" data-name="Ven Pongal" data-price="150" aria-label="Add Ven Pongal">Add</button>
+            </div>
+          </div>
+
+          <!-- MAIN COURSE -->
+          <div class="menu-item" data-category="main,bestsellers">
+            <h4>Veg Thali</h4>
+            <p>Assorted North Indian curries, dal, roti, rice, salad & dessert.</p>
+            <div class="menu-meta">
+              <span class="price">₹320</span>
+              <button class="btn small add-to-cart" data-name="Veg Thali" data-price="320" aria-label="Add Veg Thali">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="main">
+            <h4>Greenleaf Special Thali</h4>
+            <p>Chef’s choice of seasonal curries, rice, breads and sweet dish.</p>
+            <div class="menu-meta">
+              <span class="price">₹380</span>
+              <button class="btn small add-to-cart" data-name="Greenleaf Special Thali" data-price="380" aria-label="Add Greenleaf Special Thali">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="main">
+            <h4>Veg Biryani</h4>
+            <p>Layered basmati rice with marinated vegetables and spices.</p>
+            <div class="menu-meta">
+              <span class="price">₹230</span>
+              <button class="btn small add-to-cart" data-name="Veg Biryani" data-price="230" aria-label="Add Veg Biryani">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="main">
+            <h4>Mushroom Masala</h4>
+            <p>Button mushrooms cooked in onion–tomato masala gravy.</p>
+            <div class="menu-meta">
+              <span class="price">₹240</span>
+              <button class="btn small add-to-cart" data-name="Mushroom Masala" data-price="240" aria-label="Add Mushroom Masala">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="main">
+            <h4>Veg Korma with Parotta</h4>
+            <p>Mixed vegetables in coconut-based korma served with flaky parottas.</p>
+            <div class="menu-meta">
+              <span class="price">₹250</span>
+              <button class="btn small add-to-cart" data-name="Veg Korma with Parotta" data-price="250" aria-label="Add Veg Korma">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="main">
+            <h4>Stuffed Paratha Platter</h4>
+            <p>Assorted stuffed parathas served with curd and pickle.</p>
+            <div class="menu-meta">
+              <span class="price">₹210</span>
+              <button class="btn small add-to-cart" data-name="Stuffed Paratha Platter" data-price="210" aria-label="Add Stuffed Paratha Platter">Add</button>
+            </div>
+          </div>
+
+          <!-- BEVERAGES -->
+          <div class="menu-item" data-category="beverages">
+            <h4>Fresh Lime Soda</h4>
+            <p>Lime soda served sweet / salted / masala.</p>
+            <div class="menu-meta">
+              <span class="price">₹90</span>
+              <button class="btn small add-to-cart" data-name="Fresh Lime Soda" data-price="90" aria-label="Add Fresh Lime Soda">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="beverages">
+            <h4>Sweet Lassi</h4>
+            <p>Thick, sweetened yogurt drink flavoured with cardamom.</p>
+            <div class="menu-meta">
+              <span class="price">₹120</span>
+              <button class="btn small add-to-cart" data-name="Sweet Lassi" data-price="120" aria-label="Add Sweet Lassi">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="beverages">
+            <h4>Masala Chaas</h4>
+            <p>Spiced buttermilk with coriander, ginger and chilli.</p>
+            <div class="menu-meta">
+              <span class="price">₹90</span>
+              <button class="btn small add-to-cart" data-name="Masala Chaas" data-price="90" aria-label="Add Masala Chaas">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="beverages">
+            <h4>Mango Milkshake</h4>
+            <p>Thick shake made with ripe mango and ice cream.</p>
+            <div class="menu-meta">
+              <span class="price">₹160</span>
+              <button class="btn small add-to-cart" data-name="Mango Milkshake" data-price="160" aria-label="Add Mango Milkshake">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="beverages">
+            <h4>Cold Coffee</h4>
+            <p>Chilled coffee blended with milk and ice cream.</p>
+            <div class="menu-meta">
+              <span class="price">₹150</span>
+              <button class="btn small add-to-cart" data-name="Cold Coffee" data-price="150" aria-label="Add Cold Coffee">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="beverages">
+            <h4>Mixed Fruit Juice</h4>
+            <p>Blend of seasonal fresh fruits, naturally sweet.</p>
+            <div class="menu-meta">
+              <span class="price">₹160</span>
+              <button class="btn small add-to-cart" data-name="Mixed Fruit Juice" data-price="160" aria-label="Add Mixed Fruit Juice">Add</button>
+            </div>
+          </div>
+
+          <!-- DESSERTS -->
+          <div class="menu-item" data-category="desserts">
+            <h4>Gulab Jamun</h4>
+            <p>Soft khoya dumplings soaked in warm sugar syrup.</p>
+            <div class="menu-meta">
+              <span class="price">₹110</span>
+              <button class="btn small add-to-cart" data-name="Gulab Jamun" data-price="110" aria-label="Add Gulab Jamun">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="desserts">
+            <h4>Rasmalai</h4>
+            <p>Soft paneer discs soaked in saffron-flavoured rabri.</p>
+            <div class="menu-meta">
+              <span class="price">₹160</span>
+              <button class="btn small add-to-cart" data-name="Rasmalai" data-price="160" aria-label="Add Rasmalai">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="desserts">
+            <h4>Gajar ka Halwa</h4>
+            <p>Traditional carrot halwa slow-cooked with milk and ghee.</p>
+            <div class="menu-meta">
+              <span class="price">₹150</span>
+              <button class="btn small add-to-cart" data-name="Gajar ka Halwa" data-price="150" aria-label="Add Gajar ka Halwa">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="desserts">
+            <h4>Chocolate Brownie with Ice Cream</h4>
+            <p>Warm chocolate brownie served with vanilla ice cream.</p>
+            <div class="menu-meta">
+              <span class="price">₹190</span>
+              <button class="btn small add-to-cart" data-name="Chocolate Brownie with Ice Cream" data-price="190" aria-label="Add Chocolate Brownie">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="desserts">
+            <h4>Chocolate Lava Cake</h4>
+            <p>Warm chocolate cake with molten center.</p>
+            <div class="menu-meta">
+              <span class="price">₹200</span>
+              <button class="btn small add-to-cart" data-name="Chocolate Lava Cake" data-price="200" aria-label="Add Chocolate Lava Cake">Add</button>
+            </div>
+          </div>
+
+          <div class="menu-item" data-category="desserts">
+            <h4>Ice Cream (2 Scoops)</h4>
+            <p>Choice of vanilla / chocolate / strawberry.</p>
+            <div class="menu-meta">
+              <span class="price">₹130</span>
+              <button class="btn small add-to-cart" data-name="Ice Cream (2 Scoops)" data-price="130" aria-label="Add Ice Cream">Add</button>
+            </div>
+          </div>
+
+        </div>
+
+        <div id="menuNoResults" class="menu-noresults" style="display:none;">No items matched that category.</div>
+      </div>
+
+      <!-- Cart -->
+      <aside id="cart" class="cart-block">
+        <h2>Your Cart</h2>
+        <ul id="cart-items" class="cart-items">
+          <!-- JS will inject items here -->
+        </ul>
+
+        <!-- Customer details for the order -->
+        <div class="checkout-details">
+          <h3 class="checkout-title">Customer Details</h3>
+
+          <div class="form-group">
+            <label for="custName">Name</label>
+            <input type="text" id="custName" placeholder="Enter your name" />
+          </div>
+
+          <div class="form-group">
+            <label for="custPhone">Mobile Number</label>
+            <input
+              type="tel"
+              id="custPhone"
+              placeholder="e.g. 9876543210"
+              maxlength="10"
+              oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+            />
+
+          </div>
+
+          <div class="form-group">
+            <label for="custAddress">Address</label>
+            <textarea id="custAddress" rows="2"
+              placeholder="Door no, street, area, city"></textarea>
+          </div>
+        </div>
+
+        <div class="cart-footer">
+          <div class="cart-total">
+            Total: <span id="cart-total">&#8377;0</span>
+          </div>
+          <button id="clear-cart" class="btn secondary small">Clear Cart</button>
+          <button id="place-order" class="btn primary small">Place Order</button>
+          <p class="cart-note">* Your order will be saved with your name and address.</p>
+        </div>
+      </aside>
+
+    </div>
+  </section>
+
+  <!-- Reservation Section -->
+ <!-- Reservation Section (replace existing section#reservation or paste into index.html) -->
+<section id="reservation" class="section">
+  <div class="container reservation-layout">
+    <div class="reservation-text">
+      <h2 class="section-title">Reserve a Table</h2>
+      <p class="section-subtitle">
+        Avoid waiting! Reserve your table in advance and enjoy a relaxed dining experience.
+      </p>
+      <ul class="reservation-points">
+        <li>Each reservation is for 1 hour 30 minutes.</li>
+        <li>No reservations before 11:00 AM and after 11:00 PM.</li>
+        <li>If a table is already booked for a time slot, the system will ask you to choose another table or time.</li>
+      </ul>
+    </div>
+
+    <form id="reservation-form" class="reservation-form">
+      <div class="form-group">
+        <label for="resName">Full Name</label>
+        <input type="text" id="resName" required placeholder="Enter your name" />
+      </div>
+
+      <div class="form-group">
+        <label for="resPhone">Mobile Number</label>
+        <input 
+          type="tel" 
+          id="resPhone" 
+          maxlength="10" 
+          oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="resEmail">Email</label>
+        <input type="email" id="resEmail" placeholder="Optional" />
+      </div>
+
+   
+      <div class="form-group">
+        <label for="resGuests">Number of Guests</label>
+        <input type="number" id="resGuests" min="1" max="20" value="2" required />
+        <div id="resGuestsHint" style="font-size:0.85rem; color:var(--muted); margin-top:0.35rem;">
+          Choose the number of guests to see compatible tables.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="resTable">Table Number</label>
+        <select id="resTable" required>
+          <option value="">Select a table</option>
+          <!-- options are populated dynamically by script based on #resGuests -->
+        </select>
+        <div id="resTableHint" style="font-size:0.85rem; color:var(--muted); margin-top:0.35rem;">
+          Allowed tables will appear here after you enter number of guests.
+        </div>
+      </div>
+
+      <div class="form-group two-col">
+        <div>
+          <label for="resDate">Date</label>
+          <input type="date" id="resDate" required class="icon-white" />
+        </div>
+        <div>
+          <label for="resTime">Start Time</label>
+          <input type="time" id="resTime" required min="11:00" max="21:30" class="icon-white" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="resNotes">Special Requests</label>
+        <textarea id="resNotes" rows="3"
+          placeholder="Any allergies, celebrations, seating preference, etc."></textarea>
+      </div>
+
+      <button type="submit" class="btn primary full-width">Submit Reservation</button>
+      <p class="form-note">
+        * reservations can only be booked for maximum 1 month advance, contact for more info.
+      </p>
+    </form>
+  </div>
+</section>
+
+  <!-- Location & Contact -->
+  <section id="contact" class="section contact-section">
+    <div class="container contact-layout">
+      <div>
+        <h2 class="section-title">Find Us</h2>
+        <p class="section-subtitle">
+          EatFresh Veg Restaurant, 2nd Floor, Food Street, Main Road,<br />
+          Your City – 560001, India
+        </p>
+        <ul class="contact-list">
+          <li><i class="fa-solid fa-phone"></i><span>+91 98765 43210</span></li>
+          <li><i class="fa-solid fa-envelope"></i><span>contact@eatfreshveg.com</span></li>
+          <li><i class="fa-solid fa-clock"></i><span>Open 11:00 AM – 11:00 PM (All days)</span></li>
+        </ul>
+      </div>
+     <div class="map-placeholder">
+
+    <div class="map-placeholder">
+  <iframe
+    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3195.703732050745!2d80.22350167403111!3d12.87288611703693!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a525b8c90befe2b%3A0x170ab8b5b21bb530!2sSathyabama%20University!5e1!3m2!1sen!2sin!4v1764436165510!5m2!1sen!2sin"
+    width="100%"
+    height="350"
+    style="border:0; border-radius: 18px;"
+    allowfullscreen=""
+    loading="lazy"
+    referrerpolicy="no-referrer-when-downgrade">
+  </iframe>
+</div>
+
+    
+</div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <p>&copy; <span id="year"></span> EatFresh Veg Restaurant. All rights reserved.</p>
+      <p>project done by : Monica.k , Bhavatharani.P and Priyadarshini.G </p>
+    </div>
+  </footer>
+
+  <!-- your existing script (if you have cart logic in script.js) -->
+  <script src="script.js"></script>
+
+  <!-- Extra script: category filtering + add-button animation + optional integration hook -->
+  <script>
+    (function () {
+      const catNav = document.getElementById('menuCategories');
+      const menuGrid = document.getElementById('menuGrid');
+      const items = Array.from(menuGrid.querySelectorAll('.menu-item'));
+      const noResults = document.getElementById('menuNoResults');
+
+      // helper to match category (items can have comma-separated data-category)
+      function matchesCategory(item, cat) {
+        if (!cat || cat === 'all') return true;
+        const cats = (item.getAttribute('data-category') || '').toLowerCase().split(',').map(s => s.trim());
+        return cats.includes(cat);
+      }
+
+      // Category click -> filter
+      catNav.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-cat]');
+        if (!btn) return;
+        const cat = btn.getAttribute('data-cat');
+
+        // toggle active states
+        catNav.querySelectorAll('button').forEach(b => {
+          const active = b === btn;
+          b.classList.toggle('active', active);
+          b.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+
+        // filter items
+        let visible = 0;
+        items.forEach(it => {
+          if (matchesCategory(it, cat)) {
+            it.classList.remove('hidden');
+            visible++;
+          } else {
+            it.classList.add('hidden');
+          }
+        });
+
+        noResults.style.display = visible ? 'none' : 'block';
+      });
+
+      // Add button behaviour: light green visual feedback + optional hook for cart logic
+      menuGrid.addEventListener('click', (e) => {
+        const btn = e.target.closest('.add-to-cart');
+        if (!btn) return;
+
+        // visual feedback
+        btn.classList.add('added');
+
+        // remove added state after a short delay so it's reusable
+        setTimeout(() => btn.classList.remove('added'), 650);
+
+        // If you have existing cart logic in script.js that listens to clicks on .add-to-cart buttons,
+        // it will still run. If you want to handle adding into cart here, you can add code below.
+        // Example simple integration (uncomment if you don't have your own script.js cart handler):
+        /*
+        const name = btn.getAttribute('data-name');
+        const price = Number(btn.getAttribute('data-price') || 0);
+        addToCartSimple({ name, price });
+        */
+      });
+
+      /* Example simple cart integration function (disabled by default).
+         If you don't have cart-handling already, you can uncomment the call above
+         and this function will add items to the #cart-items list and update total. */
+      function addToCartSimple(item) {
+        const cartList = document.getElementById('cart-items');
+        const totalEl = document.getElementById('cart-total');
+        if (!cartList || !totalEl) return;
+
+        // add list item
+        const li = document.createElement('li');
+        li.textContent = item.name + ' — ₹' + item.price;
+        cartList.appendChild(li);
+
+        // update total
+        const current = Number(totalEl.dataset.value || 0);
+        const updated = current + Number(item.price);
+        totalEl.dataset.value = updated;
+        totalEl.textContent = '₹' + updated;
+      }
+
+      // make add buttons keyboard friendly (native button already is, but ensure focus style)
+      menuGrid.querySelectorAll('.add-to-cart').forEach(b => b.tabIndex = 0);
+
+    })();
+  </script>
+
+  <!-- Year fill script -->
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+  <!-- Custom Popup Modal -->
+<div id="popupOverlay" class="popup-overlay">
+  <div class="popup-box">
+    <p id="popupMessage"></p>
+    <button id="popupClose" class="btn primary" style="margin-top:10px;">OK</button>
+  </div>
+</div>
+  
+</body>
+</html>
+

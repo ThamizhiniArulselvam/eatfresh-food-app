@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Placed - Greenleaf Veg</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="dark-theme">
+
+  <header class="success-header">
+    <div class="success-header-inner">
+      <span class="logo">GREENLEAF VEG</span>
+    </div>
+  </header>
+
+  <main class="success-main">
+    <section class="success-card">
+      <div class="success-icon">🛒</div>
+      <h2>Order Confirmed!</h2>
+      <p class="success-msg">
+        Your delicious meal is being prepared. Thank you for ordering from Greenleaf Veg.
+      </p>
+
+      <div class="details-box">
+        <h3>Order Details</h3>
+
+        <div class="details-grid">
+          <p>
+            <span class="label">Customer</span>
+            <span id="o-name"></span>
+          </p>
+          <p>
+            <span class="label">Phone</span>
+            <span id="o-phone"></span>
+          </p>
+          <p>
+            <span class="label">Address</span>
+            <span id="o-address"></span>
+          </p>
+          <p>
+            <span class="label">Order ID</span>
+            <span id="o-id"></span>
+          </p>
+          <p>
+            <span class="label">Total Amount</span>
+            <span id="o-total"></span>
+          </p>
+        </div>
+
+        <div class="details-box" style="margin-top: 12px;">
+          <h3>Items Ordered</h3>
+          <ul id="o-items" style="padding-left: 18px;"></ul>
+        </div>
+      </div>
+
+      <a href="index.html" class="btn primary success-back-btn">
+        Back to Home
+      </a>
+    </section>
+  </main>
+
+  <script>
+    // -------------------------------
+    // Load Saved Order Details
+    // -------------------------------
+    document.getElementById("o-name").textContent =
+      sessionStorage.getItem("orderName") || "-";
+    document.getElementById("o-phone").textContent =
+      sessionStorage.getItem("orderPhone") || "-";
+    document.getElementById("o-address").textContent =
+      sessionStorage.getItem("orderAddress") || "-";
+    document.getElementById("o-total").textContent =
+      sessionStorage.getItem("orderTotal") || "-";
+
+    // -------------------------------
+    // Generate Random Order ID If Not Exists
+    // -------------------------------
+    let orderId = sessionStorage.getItem("orderId");
+
+    if (!orderId) {
+      // Generate ID like GLV-58392
+      const randomNum = Math.floor(10000 + Math.random() * 90000);
+      orderId =   randomNum;
+
+      // Save it
+      sessionStorage.setItem("orderId", orderId);
+    }
+
+    document.getElementById("o-id").textContent = orderId;
+
+    // -------------------------------
+    // Display Ordered Items
+    // -------------------------------
+    const items = JSON.parse(sessionStorage.getItem("orderItems") || "[]");
+    const itemsList = document.getElementById("o-items");
+
+    items.forEach(i => {
+      const li = document.createElement("li");
+      li.textContent = `${i.name} x ${i.quantity} — ₹${i.price * i.quantity}`;
+      itemsList.appendChild(li);
+    });
+  </script>
+
+</body>
+</html>
+

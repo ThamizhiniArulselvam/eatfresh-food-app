@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reservation Confirmed - Greenleaf Veg</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="dark-theme">
+
+  <header class="success-header">
+    <div class="success-header-inner">
+      <span class="logo">GREENLEAF VEG</span>
+    </div>
+  </header>
+
+  <main class="success-main">
+    <section class="success-card">
+      <div class="success-icon">🎉</div>
+      <h2>Reservation Confirmed!</h2>
+      <p class="success-msg">
+        Thank you, your table is booked. We look forward to serving you.
+      </p>
+
+      <div class="details-box">
+        <h3>Reservation Details</h3>
+
+        <div class="details-grid">
+          <p>
+            <span class="label">Name</span>
+            <span id="s-name"></span>
+          </p>
+          <p>
+            <span class="label">Phone</span>
+            <span id="s-phone"></span>
+          </p>
+          <p>
+            <span class="label">Date</span>
+            <span id="s-date"></span>
+          </p>
+          <p>
+            <span class="label">Time</span>
+            <span id="s-time"></span>
+          </p>
+          <p>
+            <span class="label">Table</span>
+            <span id="s-table"></span>
+          </p>
+          <p>
+            <span class="label">Guests</span>
+            <span id="s-guests"></span>
+          </p>
+          <p class="details-notes">
+            <span class="label">Special Requests</span>
+            <span id="s-notes"></span>
+          </p>
+        </div>
+      </div>
+
+      <a href="index.html" class="btn primary success-back-btn">
+        Back to Home
+      </a>
+    </section>
+  </main>
+
+  <script>
+    document.getElementById("s-name").textContent =
+      sessionStorage.getItem("resName") || "-";
+    document.getElementById("s-phone").textContent =
+      sessionStorage.getItem("resPhone") || "-";
+    document.getElementById("s-date").textContent =
+      sessionStorage.getItem("resDate") || "-";
+    document.getElementById("s-time").textContent =
+      sessionStorage.getItem("resTime") || "-";
+    document.getElementById("s-table").textContent =
+      sessionStorage.getItem("resTable") || "-";
+    document.getElementById("s-guests").textContent =
+      sessionStorage.getItem("resGuests") || "-";
+    document.getElementById("s-notes").textContent =
+      sessionStorage.getItem("resNotes") || "None";
+  </script>
+
+</body>
+</html>
+
+
+
